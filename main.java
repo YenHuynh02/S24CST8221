@@ -100,7 +100,7 @@ public class main {
         enemyShips.setBackground(new java.awt.Color(255, 247, 231));
         statsPanel.add(enemyShips);
 
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Gap created or margin-bottom: 20px
+        rightPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Gap created or margin-bottom: 20px
 
         // Combat log area
         JTextArea combatLog = new JTextArea("Initializing game boards...\nSelect where to place your ships.\nStarting combat!\nEnemy attacked at 6,6, missing.");
@@ -130,6 +130,8 @@ public class main {
 
         // Pack and set the frame visible
         frame.pack();
+        frame.setLocation(100, frame.getY());
+        frame.setLocation(100, frame.getX());
         frame.setVisible(true);
     }
 
