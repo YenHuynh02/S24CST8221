@@ -129,7 +129,6 @@ public class main {
         // Display scroll pane if the text over the limit
         JScrollPane scrollPane = new JScrollPane(combatLog);
         scrollPane.setPreferredSize(new Dimension(width * 1 / 4 - 20, height));
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         rightPanel.add(scrollPane);
 
         // Text box
