@@ -1,12 +1,11 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 public class MainMenu extends JMenuBar {
     
     public MainMenu(JFrame frame) {
         JMenu gameMenu = new JMenu("Game");
-
+        gameMenu.setMnemonic('G');
         JMenuItem restartItem = new JMenuItem("Restart");
         JMenuItem exitItem = new JMenuItem("Exit");
         JMenuItem saveItem = new JMenuItem("Save");
