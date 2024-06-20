@@ -24,6 +24,10 @@ public class main {
         mainPanel.setBackground(Color.BLACK); // Set the background color of the main panel
         frame.add(mainPanel);
 
+        // Add the menu bar
+        MainMenu mainMenu = new MainMenu(frame);
+        frame.setJMenuBar(mainMenu);
+
         // Top panel for the logo and buttons
         JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER, 82, 10));
         top.setPreferredSize(new Dimension(width, height / 10));
