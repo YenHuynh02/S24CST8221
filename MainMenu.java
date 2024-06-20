@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 public class MainMenu extends JMenuBar {
     
     public MainMenu(JFrame frame) {
