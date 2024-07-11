@@ -1,49 +1,20 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class MainMenu extends JMenuBar {
-    
-    public MainMenu(JFrame frame) {
+    public MainMenu() {
         JMenu gameMenu = new JMenu("Game");
-        gameMenu.setMnemonic('G');
-        JMenuItem restartItem = new JMenuItem("Restart");
-        JMenuItem exitItem = new JMenuItem("Exit");
-        JMenuItem saveItem = new JMenuItem("Save");
+        add(gameMenu);
 
-        gameMenu.add(restartItem);
-        gameMenu.add(exitItem);
-        gameMenu.add(saveItem);
+        JMenuItem newGame = new JMenuItem("New Game");
+        gameMenu.add(newGame);
 
-        this.add(gameMenu);
+        JMenuItem exitGame = new JMenuItem("Exit");
+        gameMenu.add(exitGame);
 
-        // Add action listeners
-        restartItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                restartGame();
-            }
-        });
-
-        exitItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        saveItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveGame();
-            }
-        });
+        exitGame.addActionListener(e -> System.exit(0));
     }
 
-    private void restartGame() {
-        // Code to restart the game
-        System.out.println("Game restarted.");
-    }
-
-    private void saveGame() {
-        // Code to save the game
-        System.out.println("Game saved.");
+    public void addMenuToFrame(JFrame frame) {
+        frame.setJMenuBar(this);
     }
 }
