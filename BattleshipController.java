@@ -1,178 +1,185 @@
-import java.util.Random;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class BattleshipModel {
-    private char[][] playerBoard;
-    private char[][] computerBoard;
-    private boolean playerTurn;
-    private boolean gameOver;
-    private int playerHits;
-    private int computerHits;
-    public final int SHIP_SIZE = 5; // Size of the ship
+public class BattleshipController {
+    private BattleshipView view;
+    private BattleshipModel model;
+    private boolean isPlacingShips;
+    private boolean playerShipPlaced;
 
-    public BattleshipModel() {
-        playerBoard = new char[10][10];
-        computerBoard = new char[10][10];
-        playerTurn = true;
-        gameOver = false;
-        playerHits = 0;
-        computerHits = 0;
+    public BattleshipController(BattleshipView view, BattleshipModel model) {
+        this.view = view;
+        this.model = model;
+        this.isPlacingShips = true;
+        this.playerShipPlaced = false;
 
-        // Initialize boards with empty characters
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                playerBoard[i][j] = ' ';
-                computerBoard[i][j] = ' ';
+        initializeGame();
+        addEventListeners();
+    }
+
+    private void initializeGame() {
+        view.updateStatus("Welcome to Battleship! Place your ship.");
+        view.setTurnLabel("Player's turn");
+        view.updatePlayerShipsStatus(5); // Initialize player ships status
+        view.updateEnemyShipsStatus(5); // Initialize enemy ships status
+        view.getSwapButton().setEnabled(false); // Disable swap button at start
+    }
+
+    private void addEventListeners() {
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                int finalRow = row;
+                int finalCol = col;
+                view.getPlayerButtons()[row][col].addActionListener(e -> {
+                    if (isPlacingShips) {
+                        placePlayerShip(finalRow, finalCol);
+                    } else if (model.isPlayerTurn()) {
+                        playerAttack(finalRow, finalCol);
+                        view.getSwapButton().setEnabled(true); // Enable swap button after player's turn
+                    }
+                });
             }
         }
 
-        // Randomly place computer ship
-        placeComputerShip();
-    }
-
-    public char[][] getPlayerBoard() {
-        return playerBoard;
-    }
-
-    public char[][] getComputerBoard() {
-        return computerBoard;
-    }
-
-    public boolean isPlayerTurn() {
-        return playerTurn;
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
-
-    public boolean playerAttack(int x, int y) {
-        boolean hit = false;
-        if (computerBoard[x][y] == ' ') {
-            computerBoard[x][y] = 'M';
-        } else if (computerBoard[x][y] == 'S') {
-            computerBoard[x][y] = 'H';
-            playerHits++;
-            hit = true;
-        }
-        playerTurn = false;
-        checkGameOver();
-        return hit;
-    }
-
-    public int[] computerAttack() {
-        int x, y;
-        Random rand = new Random();
-        do {
-            x = rand.nextInt(10);
-            y = rand.nextInt(10);
-        } while (playerBoard[x][y] == 'M' || playerBoard[x][y] == 'H');
-
-        if (playerBoard[x][y] == ' ') {
-            playerBoard[x][y] = 'M';
-        } else if (playerBoard[x][y] == 'S') {
-            playerBoard[x][y] = 'H';
-            computerHits++;
-        }
-        playerTurn = true;
-        checkGameOver();
-        return new int[]{x, y};
-    }
-
-    public void placePlayerShip(int x, int y, char orientation) {
-        if (orientation == 'H') {
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                playerBoard[x][y + i] = 'S';
+        view.getSwapButton().addActionListener(e -> {
+            if (!model.isPlayerTurn() && !model.isGameOver()) {
+                aiTurn();
+                view.getSwapButton().setEnabled(false); // Disable swap button after AI's turn
             }
+        });
+
+        view.getPlaceButton().addActionListener(e -> {
+            if (isPlacingShips) {
+                view.updateStatus("Click on the board to place your ship.");
+            } else {
+                view.updateStatus("You have already placed your ship.");
+            }
+        });
+
+        view.getResetButton().addActionListener(e -> resetGame());
+
+        view.getChatBox().addActionListener(e -> {
+            String message = view.getChatBox().getText();
+            if (!message.isEmpty()) {
+                view.updateStatus(message);
+                view.getChatBox().setText("");
+            }
+        });
+    }
+
+    private void placePlayerShip(int row, int col) {
+        if (playerShipPlaced) {
+            view.updateStatus("Ship already placed. Start attacking!");
+            return;
+        }
+
+        String orientation = view.showOrientationDialog();
+        if (model.canPlaceShip(model.getPlayerBoard(), row, col, orientation.charAt(0))) {
+            model.placePlayerShip(row, col, orientation.charAt(0));
+            for (int i = 0; i < model.SHIP_SIZE; i++) {
+                if (orientation.equals("H")) {
+                    view.getPlayerButtons()[row][col + i].setIcon(view.getShipHIcon());
+                } else {
+                    view.getPlayerButtons()[row + i][col].setIcon(view.getShipVIcon());
+                }
+            }
+            playerShipPlaced = true;
+            isPlacingShips = false;
+            view.updateStatus("Ship placed. Start attacking!");
+            view.updatePlayerShipsStatus(0); // Update player ships status to 0/5
+            view.updateEnemyShipsStatus(0); // Update enemy ships status to 0/5
+            view.getSwapButton().setEnabled(true); // Enable swap button after placing the ship
         } else {
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                playerBoard[x + i][y] = 'S';
-            }
+            view.updateStatus("Invalid ship placement. Try again.");
         }
     }
 
-    private void placeComputerShip() {
-        Random rand = new Random();
-        boolean placed = false;
-        while (!placed) {
-            int x = rand.nextInt(10);
-            int y = rand.nextInt(10);
-            char orientation = rand.nextBoolean() ? 'H' : 'V';
-            if (canPlaceShip(computerBoard, x, y, orientation)) {
-                placeShip(computerBoard, x, y, orientation);
-                placed = true;
-            }
+    private void playerAttack(int row, int col) {
+        if (model.isGameOver()) {
+            return;
         }
-    }
 
-    public boolean canPlaceShip(char[][] board, int x, int y, char orientation) {
-        if (orientation == 'H') {
-            if (y + SHIP_SIZE > 10) return false;
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                if (board[x][y + i] != ' ') return false;
-            }
+        boolean hit = model.playerAttack(row, col);
+        if (hit) {
+            view.getPlayerButtons()[row][col].setIcon(view.getHitIcon());
+            view.updateStatus("Player attacked at: " + row + ", " + col + " (hit)");
+            view.updateEnemyShipsStatus(model.SHIP_SIZE - model.getPlayerHits()); // Update enemy ships status
         } else {
-            if (x + SHIP_SIZE > 10) return false;
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                if (board[x + i][y] != ' ') return false;
-            }
+            view.getPlayerButtons()[row][col].setIcon(view.getMissIcon());
+            view.updateStatus("Player attacked at: " + row + ", " + col + " (miss)");
         }
-        return true;
-    }
 
-    private void placeShip(char[][] board, int x, int y, char orientation) {
-        if (orientation == 'H') {
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                board[x][y + i] = 'S';
-            }
+        if (model.isGameOver()) {
+            endGame();
         } else {
-            for (int i = 0; i < SHIP_SIZE; i++) {
-                board[x + i][y] = 'S';
+            view.setTurnLabel("AI's turn");
+        }
+    }
+
+    private void aiTurn() {
+        Timer timer = new Timer(1000, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] attackCoordinates = model.computerAttack();
+                int row = attackCoordinates[0];
+                int col = attackCoordinates[1];
+
+                if (model.getPlayerBoard()[row][col] == 'H') {
+                    view.getPlayerButtons()[row][col].setIcon(view.getHitIcon());
+                    view.updateStatus("Computer attacked at: " + row + ", " + col + " (hit)");
+                    view.updatePlayerShipsStatus(model.SHIP_SIZE - model.getComputerHits()); // Update player ships status
+                } else {
+                    view.getPlayerButtons()[row][col].setIcon(view.getMissIcon());
+                    view.updateStatus("Computer attacked at: " + row + ", " + col + " (miss)");
+                }
+
+                if (model.isGameOver()) {
+                    endGame();
+                } else {
+                    view.setTurnLabel("Player's turn");
+                }
+
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        timer.start();
+    }
+
+    private void endGame() {
+        view.showGameEndDialog(model.getWinner() + " wins!");
+        if (model.getWinner().equals("Computer")) {
+            revealComputerShips();
+        }
+    }
+
+    private void revealComputerShips() {
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                if (model.getComputerBoard()[row][col] == 'S') {
+                    view.getPlayerButtons()[row][col].setIcon(view.getShipHIcon());
+                }
             }
         }
     }
 
-    private void checkGameOver() {
-        if (playerHits >= SHIP_SIZE) {
-            gameOver = true;
-        } else if (computerHits >= SHIP_SIZE) {
-            gameOver = true;
-        }
+    private void resetGame() {
+        model.resetGame();
+        view.updateStatus("Game reset. Place your ship.");
+        view.setTurnLabel("Player's turn");
+        isPlacingShips = true;
+        playerShipPlaced = false;
+
+        resetGrid(view.getPlayerButtons());
+        view.getSwapButton().setEnabled(false); // Disable swap button at reset
+        view.updatePlayerShipsStatus(5); // Reset player ships status
+        view.updateEnemyShipsStatus(5); // Reset enemy ships status
     }
 
-    public String getWinner() {
-        if (playerHits >= SHIP_SIZE) {
-            return "Player";
-        } else if (computerHits >= SHIP_SIZE) {
-            return "Computer";
-        }
-        return null;
-    }
-
-    public int getPlayerHits() {
-        return playerHits;
-    }
-
-    public int getComputerHits() {
-        return computerHits;
-    }
-
-    public void resetGame() {
-        playerBoard = new char[10][10];
-        computerBoard = new char[10][10];
-        playerTurn = true;
-        gameOver = false;
-        playerHits = 0;
-        computerHits = 0;
-
-        // Initialize boards with empty characters
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                playerBoard[i][j] = ' ';
-                computerBoard[i][j] = ' ';
+    private void resetGrid(JButton[][] buttons) {
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                buttons[row][col].setIcon(null);
             }
         }
-
-        // Randomly place computer ship
-        placeComputerShip();
     }
 }
