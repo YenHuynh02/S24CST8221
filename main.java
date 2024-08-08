@@ -1,15 +1,26 @@
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class main {
     public static void main(String[] args) {
+        // Create and show the client frame for input
+        SwingUtilities.invokeLater(() -> {
+            ClientFrame clientFrame = new ClientFrame();
+            clientFrame.setVisible(true);
+        });
+    }
+}
+
+class BattleshipMain {
+    public static void startGame(String serverIp, int serverPort, String playerName) {
         JFrame frame = new JFrame("Battleship");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
         BattleshipView view = new BattleshipView();
         BattleshipModel model = new BattleshipModel();
-        Client client = new Client(view);
+        Client client = new Client(serverIp, serverPort, playerName, view.getStatusArea());
         new BattleshipController(view, model, client.getNetwork());
 
         // Create and set the main menu

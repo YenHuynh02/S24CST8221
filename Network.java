@@ -13,13 +13,7 @@ public class Network implements Runnable {
         this.host = host;
         setupStreams();
     }
-
-    public Network(Socket socket, BattleshipView view) {
-        this.socket = socket;
-        this.view = view;
-        setupStreams();
-    }
-
+    
     private void setupStreams() {
         try {
             out = new PrintWriter(socket.getOutputStream(), true);

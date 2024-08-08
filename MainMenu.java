@@ -14,7 +14,7 @@ public class MainMenu extends JMenuBar {
 
         JMenuItem exitGame = new JMenuItem("Exit");
         gameMenu.add(exitGame);
-        
+
         JMenuItem language = new JMenuItem("Language");
         gameMenu.add(language);
 

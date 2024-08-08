@@ -14,7 +14,7 @@ public class BattleshipModel {
     public final int SUBMARINE_SIZE = 4;
     public final int CARRIER_SIZE = 5;
     private char currentShipType;
-    
+
     public BattleshipModel() {
         playerBoard = new char[10][10];
         computerBoard = new char[10][10];
